@@ -1,0 +1,23 @@
+/*
+ * Mandatory:
+ *
+ * vars.nfs.options.archiveOnDelete
+ * 
+ */
+
+/*
+ *
+ */
+rbac-yaml(parent, vars) ::= <<
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  labels:
+    k8s-app: nfs-client-provisioner
+    addonmanager.kubernetes.io/mode: Reconcile
+  name: managed-nfs-storage
+provisioner: fuseim.pri/ifs # or choose another name, must match deployment's env PROVISIONER_NAME'
+parameters:
+  archiveOnDelete: "<if(vars.nfs.options.archiveOnDelete)>true<else>false<endif>"
+
+>>
