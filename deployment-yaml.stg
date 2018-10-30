@@ -67,14 +67,14 @@ spec:
             - name: PROVISIONER_NAME
               value: fuseim.pri/ifs
             - name: NFS_SERVER
-              value: <vars.nfs.server>
+              value: <vars.nfs.server.address>
             - name: NFS_PATH
-              value: <vars.nfs.export>
+              value: <vars.nfs.server.export>
       volumes:
         - name: nfs-client-root
           nfs:
-            server: <vars.nfs.server>
-            path: <vars.nfs.export>
+            server: <vars.nfs.server.address>
+            path: <vars.nfs.server.export>
       <affinitiesGroup(parent, vars, vars.nfs.affinity)>
       <tolerationMasterGroup(parent, vars, vars.nfs.allowOnMaster)>
       <tolerationsGroup(parent, vars, vars.nfs.tolerations, vars.nfs.allowOnMaster)>
