@@ -1,0 +1,82 @@
+/*
+ * Mandatory:
+ *
+ * vars.nfs.image.version
+ * vars.nfs.image.name
+ * vars.nfs.server.address
+ * vars.nfs.server.export
+ *
+ * Optional:
+ *
+ * vars.nfs.limits.cpu
+ * vars.nfs.limits.memory
+ * vars.nfs.requests.cpu
+ * vars.nfs.requests.memory
+ * vars.nfs.affinity.key
+ * vars.nfs.affinity.name
+ * vars.nfs.affinity.required
+ * vars.nfs.allowOnMaster
+ * vars.nfs.tolerations[].effect
+ * vars.nfs.tolerations[].key
+ * vars.nfs.tolerations[].value
+ */
+
+import "robobeerun-templates/_affinities.stg"
+import "robobeerun-templates/_tolerations.stg"
+import "robobeerun-templates/_resources.stg"
+
+/*
+ *
+ */
+deployment-yaml(parent, vars) ::= <<
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    k8s-app: nfs-client-provisioner
+    addonmanager.kubernetes.io/mode: Reconcile
+  name: nfs-client-provisioner
+  namespace: kube-system
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  labels:
+    k8s-app: nfs-client-provisioner
+    addonmanager.kubernetes.io/mode: Reconcile
+  name: nfs-client-provisioner
+  namespace: kube-system
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: nfs-client-provisioner
+    spec:
+      serviceAccountName: nfs-client-provisioner
+      containers:
+        - name: nfs-client-provisioner
+          image: <vars.nfs.image.name>:<vars.nfs.image.version>
+          <resourcesGroup(parent, vars, vars.nfs)>
+          volumeMounts:
+            - name: nfs-client-root
+              mountPath: /persistentvolumes
+          env:
+            - name: PROVISIONER_NAME
+              value: fuseim.pri/ifs
+            - name: NFS_SERVER
+              value: <vars.nfs.server.address>
+            - name: NFS_PATH
+              value: <vars.nfs.server.export>
+      volumes:
+        - name: nfs-client-root
+          nfs:
+            server: <vars.nfs.server.address>
+            path: <vars.nfs.server.export>
+      <affinitiesGroup(parent, vars, vars.nfs.affinity)>
+      <tolerationMasterGroup(parent, vars, vars.nfs.allowOnMaster)>
+      <tolerationsGroup(parent, vars, vars.nfs.tolerations, vars.nfs.allowOnMaster)>
+
+>>
