@@ -3,6 +3,10 @@
  *
  * vars.nfs.options.archiveOnDelete
  * 
+ * Optional:
+ * 
+ * vars.nfs.options.default
+ * 
  */
 
 /*
@@ -16,6 +20,8 @@ metadata:
     k8s-app: nfs-client-provisioner
     addonmanager.kubernetes.io/mode: Reconcile
   name: managed-nfs-storage
+  annotations:
+    storageclass.kubernetes.io/is-default-class: <if(vars.nfs.options.default)>true<else>false<endif>
 provisioner: fuseim.pri/ifs # or choose another name, must match deployment's env PROVISIONER_NAME'
 parameters:
   archiveOnDelete: "<if(vars.nfs.options.archiveOnDelete)>true<else>false<endif>"
